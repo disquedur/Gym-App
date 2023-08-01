@@ -18,6 +18,7 @@ class _MapComponentState extends State<MapComponent> {
         onMapCreated: (controller) {
           setState(() {
             _controller = controller;
+            print(_controller);
           });
         },
       ),

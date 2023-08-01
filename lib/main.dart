@@ -2,33 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:my_app/Classes/side_menu.dart';
 import 'package:my_app/Pages/map_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'Pages/login_page.dart';
 import 'Pages/home_page.dart';
 import 'Pages/sign_page.dart';
-//import 'Services/Socket_service.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final getIt = GetIt.instance;
 
-void setup() {
- //getIt.registerSingleton<SocketService>(SocketService());
- //getIt<SocketService>().connect();
-}
-
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  setup();
-  FlutterError.onError = (FlutterErrorDetails details) {
-    print("Error From INSIDE FRAME_WORK");
-    print("----------------------");
-    print("Error :  ${details.exception}");
-    print("StackTrace :  ${details.stack}");
-  };
+void main() async {
+  await dotenv.load(fileName: ".env");
+  ;
+  await Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '');
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

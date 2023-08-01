@@ -8,17 +8,17 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
-  int _selectedIndex = 0;
+  int selectedIndex = 0;
 
-  List<Widget> _screens = [
+  final List<Widget> screens = [
     MapComponent(),
     SignInPage(),
     SettingsScreen(),
   ];
 
-  void _onItemSelected(int index) {
+  void onItemSelected(int index) {
     setState(() {
-      _selectedIndex = index;
+      selectedIndex = index;
     });
   }
 
@@ -28,7 +28,7 @@ class _SideMenuState extends State<SideMenu> {
       appBar: AppBar(
         title: Text('Side Menu Navigator'),
       ),
-      body: _screens[_selectedIndex],
+      body: screens[selectedIndex],
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -48,20 +48,20 @@ class _SideMenuState extends State<SideMenu> {
             ListTile(
               leading: Icon(Icons.map_outlined),
               title: Text('Map'),
-              selected: _selectedIndex == 0,
-              onTap: () => _onItemSelected(0),
+              selected: selectedIndex == 0,
+              onTap: () => onItemSelected(0),
             ),
             ListTile(
               leading: Icon(Icons.favorite),
               title: Text('Favorites'),
-              selected: _selectedIndex == 1,
-              onTap: () => _onItemSelected(1),
+              selected: selectedIndex == 1,
+              onTap: () => onItemSelected(1),
             ),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
-              selected: _selectedIndex == 2,
-              onTap: () => _onItemSelected(2),
+              selected: selectedIndex == 2,
+              onTap: () => onItemSelected(2),
             ),
           ],
         ),

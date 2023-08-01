@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/Services/api.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -31,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
                   icon: const Icon(Icons.emoji_people,
                       color: Color.fromARGB(255, 243, 235, 235)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 10, 34, 54),
+                    backgroundColor: const Color.fromARGB(255, 10, 34, 54),
                   ),
                   label: const Text('Visitor',
                       style: TextStyle(
@@ -54,10 +53,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 10, 34, 54),
+                    backgroundColor: const Color.fromARGB(255, 10, 34, 54),
                   ),
                   onPressed: () async {
-                    await ApiService().loginUser('David');
+                    Navigator.pushNamed(context, '/sideMenu');
                   },
                 ),
               ),
