@@ -1,6 +1,9 @@
 # GYMRAT 
 
-This project is a cross-platform mobile application developed in Flutter for gym members. The app provides real-time access to gym member attendance, enables locating training colleagues on a map, and offers personalized training programs based on user levels.
+This project is a cross-platform mobile application developed in Flutter for gym members. The app provides real-time access to gym member attendance, enables locating training colleagues on a map, and offers personalized training programs based on user levels. 
+
+Striving to foster a vibrant community and emerge as the go-to social media platform that empowers individuals to embrace fitness and engage in active lifestyles.
+
 The project is in progress! [40%]
 
 ## Features
