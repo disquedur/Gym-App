@@ -3,8 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:my_app/Classes/side_menu.dart';
 import 'package:my_app/Pages/map_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'Pages/login_page.dart';
 import 'Pages/home_page.dart';
+import 'Pages/login_page.dart';
 import 'Pages/sign_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -12,10 +12,9 @@ final getIt = GetIt.instance;
 
 void main() async {
   await dotenv.load(fileName: ".env");
-  ;
   await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '');
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!);
   runApp(const MyApp());
 }
 
@@ -25,10 +24,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/login',
+      initialRoute: '/home',
       routes: {
-        '/login': (context) => LoginPage(),
         '/home': (context) => HomePage(),
+        '/login': (context) => LoginPage(),
         '/signIn': (context) => SignInPage(),
         '/sideMenu': (context) => SideMenu(),
         '/map': (context) => MapComponent(),
@@ -37,7 +36,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: HomePage(),
     );
   }
 }

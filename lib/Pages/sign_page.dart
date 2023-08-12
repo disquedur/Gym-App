@@ -1,6 +1,8 @@
 import 'dart:core';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignInPage extends StatefulWidget {
@@ -10,6 +12,7 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final supabase = Supabase.instance.client;
 
   final usernameController = TextEditingController();
   final authController = TextEditingController();
@@ -18,7 +21,10 @@ class _SignInPageState extends State<SignInPage> {
 
   bool authButton = false;
   bool isCodeSent = false;
+  bool isEmailSent = false;
+  AuthResponse emailRes = AuthResponse();
   String authMethod = "";
+  String phoneNumber = "";
   bool codeIsValid = false;
 
   @override
@@ -29,28 +35,84 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
-  Future<void> createAccount(String username, String password) async {
-    await Supabase.instance.client
-        .from('Users')
-        .insert({'username': username, 'password': password});
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Account created!"),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    Navigator.pop(context);
+  createAccount(AuthResponse authResponse) async {
+    String authInfo = authMethod == "Email address" ? 'email' : 'phone';
+    AuthResponse authResponse = AuthResponse();
+    if (authInfo == 'phone') {
+      try {
+        authResponse = await supabase.auth.verifyOTP(
+            phone: phoneNumber,
+            token: codeValidationController.text,
+            type: OtpType.sms);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Token has expired or is invalid"),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+    if (authResponse.user?.aud == "authenticated") {
+      await supabase
+          .from(
+        dotenv.env['TABLE_USERS']!,
+      )
+          .insert({
+        'username': usernameController.text,
+        'password': passwordController.text,
+        authInfo: authController.text
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Account created!"),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  sendVerification() {
+    setState(() {
+      supabase.auth
+          .signUp(phone: phoneNumber, password: passwordController.text);
+      isCodeSent = true;
+    });
+  }
+
+  signUpWithEmail() async {
+    final confirmation = await supabase.auth
+        .signUp(email: authController.text, password: passwordController.text);
+    if (!isEmailSent) {
+      await supabase.auth.signInWithOtp(email: authController.text);
+      isEmailSent = true;
+    } else if (confirmation.user?.emailConfirmedAt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You received an email, please verify your email!"),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    } else {
+      await supabase.auth.signUp(
+          email: authController.text, password: passwordController.text);
+      createAccount(emailRes);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 174, 195, 213),
+        iconTheme:
+            const IconThemeData(color: Color.fromARGB(255, 217, 219, 222)),
+        backgroundColor: const Color.fromARGB(255, 10, 34, 54),
         title: const Text(
           'Create account',
           style: TextStyle(
-            color: Color.fromARGB(255, 0, 31, 86),
+            color: Color.fromARGB(255, 217, 219, 222),
           ),
         ),
       ),
@@ -97,13 +159,11 @@ class _SignInPageState extends State<SignInPage> {
                 !authButton
                     ? Column(
                         children: [
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.all(8.0),
-                            child: Text('Authentication',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  color: Color.fromARGB(255, 2, 51, 87),
-                                )),
+                            child: SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.03),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -125,7 +185,7 @@ class _SignInPageState extends State<SignInPage> {
                                       const Color.fromARGB(255, 10, 34, 54),
                                 ),
                                 label: const Text(
-                                  'email',
+                                  'Email',
                                   style: TextStyle(
                                     color: Color.fromARGB(255, 238, 239, 239),
                                   ),
@@ -159,22 +219,24 @@ class _SignInPageState extends State<SignInPage> {
                         ],
                       )
                     : displayValidationField(),
-                if (codeValidationController.text.isNotEmpty)
+                if (isCodeSent)
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (formKey.currentState!.validate()) {
-                          String username = usernameController.text;
-                          String password = codeValidationController.text;
-                          createAccount(username, password);
-                        }
-                      },
+                      onPressed: codeValidationController.text.isNotEmpty
+                          ? () {
+                              setState(() {
+                                if (formKey.currentState!.validate()) {
+                                  createAccount(AuthResponse());
+                                }
+                              });
+                            }
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 10, 34, 54),
                       ),
                       child: const Text(
-                        'Validate code',
+                        'Create account',
                         style: TextStyle(
                           color: Color.fromARGB(255, 238, 239, 239),
                         ),
@@ -192,34 +254,56 @@ class _SignInPageState extends State<SignInPage> {
   displayValidationField() {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.07,
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: TextFormField(
-              controller: authController,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color.fromARGB(255, 216, 219, 224),
-                labelText: authMethod,
-                icon: Icon(authMethod == "Phone number"
-                    ? Icons.contact_phone
-                    : Icons.contact_mail),
-                border: const OutlineInputBorder(),
+        if (authMethod == "Email address")
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.07,
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: TextFormField(
+                controller: authController,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Color.fromARGB(255, 216, 219, 224),
+                  labelText: "Email address",
+                  icon: Icon(Icons.contact_mail),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "The email is required.";
+                  } else if (value.length < 3 ||
+                      !value.contains(RegExp(
+                          "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"))) {
+                    return "Invalid format";
+                  }
+                  return null;
+                },
               ),
-              obscureText: true,
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return "The password is required.";
-                } else if (value.length < 7) {
-                  return "The username should have at least 7 characters.";
-                }
-                return null;
-              },
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.07,
+              width: MediaQuery.of(context).size.width * 0.8,
+              child: IntlPhoneField(
+                controller: authController,
+                decoration: const InputDecoration(
+                  counterText: "",
+                  filled: true,
+                  fillColor: const Color.fromARGB(255, 216, 219, 224),
+                  labelText: 'Phone Number',
+                  border: const OutlineInputBorder(),
+                ),
+                initialCountryCode: 'CA',
+                onChanged: (phone) {
+                  phoneNumber = phone.completeNumber;
+                },
+              ),
             ),
           ),
-        ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: SizedBox(
@@ -238,8 +322,8 @@ class _SignInPageState extends State<SignInPage> {
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
                   return "The password is required.";
-                } else if (value.length < 7) {
-                  return "The username should have at least 7 characters.";
+                } else if (value.length < 5) {
+                  return "The password should have at least 5 characters.";
                 }
                 return null;
               },
@@ -248,11 +332,14 @@ class _SignInPageState extends State<SignInPage> {
         ),
         !isCodeSent
             ? ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isCodeSent = true;
-                  });
-                },
+                onPressed: authController.text.isNotEmpty &&
+                        formKey.currentState!.validate()
+                    ? () {
+                        authMethod == "Email address"
+                            ? signUpWithEmail()
+                            : sendVerification();
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 10, 34, 54),
                 ),
@@ -263,22 +350,31 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.07,
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: TextFormField(
-                    controller: codeValidationController,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Color.fromARGB(255, 216, 219, 224),
-                      labelText: "Validation code",
-                      icon: Icon(Icons.confirmation_number),
-                      border: OutlineInputBorder(),
+            : Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.07,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    child: TextFormField(
+                      controller: codeValidationController,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 216, 219, 224),
+                        labelText: "Validation code",
+                        icon: Icon(Icons.confirmation_number),
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
-                ),
+                  TextButton(
+                    child: const Text('Send new code?'),
+                    onPressed: () {
+                      setState(() {
+                        sendVerification();
+                      });
+                    },
+                  ),
+                ],
               ),
         TextButton(
           child: const Text('Change authentication method'),
@@ -286,6 +382,7 @@ class _SignInPageState extends State<SignInPage> {
             setState(() {
               authMethod = "";
               codeValidationController.text = "";
+              authController.text = "";
               authButton = false;
               isCodeSent = false;
             });
