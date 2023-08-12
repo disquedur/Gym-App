@@ -1,17 +1,26 @@
-# my_app
+# GYMRAT 
 
-A new Flutter project.
+This project is a cross-platform mobile application developed in Flutter for gym members. The app provides real-time access to gym member attendance, enables locating training colleagues on a map, and offers personalized training programs based on user levels.
+The project is in progress! [40%]
 
-## Getting Started
+## Features
+Attendance Tracking: Members can view real-time attendance records, helping them stay up-to-date with their gym activities.
 
-This project is a starting point for a Flutter application.
+Map Integration: The app allows users to locate their training colleagues on a map, fostering a sense of community and collaboration.
 
-A few resources to get you started if this is your first Flutter project:
+Personalized Training Programs: Users receive training programs tailored to their fitness levels, helping them achieve their fitness goals effectively.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Database Management: The PostgreSQL database is hosted and managed using Supabase, ensuring reliable and secure data storage.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-"# Gym-App" 
+Authentication: User accounts are secured through email or phone number authentication, ensuring data privacy and user access control.
+
+## Technologies Used
+Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
+
+## Screenshots
+
+## Contributors
+Jean David Amoussa [dvd-a9]
+
+## License
+This project is licensed under the MIT License.
