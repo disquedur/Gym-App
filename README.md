@@ -18,6 +18,9 @@ Authentication: User accounts are secured through email or phone number authenti
 Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
 
 ## Screenshots
+![image](https://github.com/dvd-a9/Gym-App/assets/71023573/222a3ec3-1c10-4077-9a91-6ecf34ccd12f)
+
+More coming soon!
 
 ## Contributors
 Jean David Amoussa [dvd-a9]
