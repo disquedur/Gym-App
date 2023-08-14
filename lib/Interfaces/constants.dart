@@ -1,1 +1,0 @@
-const android_map_api_key = "AIzaSyC9l-XG8zgQ663nOm95pW3av8Y6TT2GBas";
