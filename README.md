@@ -1,21 +1,21 @@
 # GYMRAT 
 
-This project is a cross-platform mobile application developed in Flutter for gym members. The app provides real-time access to gym member attendance, enables locating training colleagues on a map, and offers personalized training programs based on user levels. 
+- This project is a cross-platform mobile application developed in Flutter for gym members. The app provides real-time access to gym member attendance, enables locating training colleagues on a map, and offers personalized training programs based on user levels. 
 
-Striving to foster a vibrant community and emerge as the go-to social media platform that empowers individuals to embrace fitness and engage in active lifestyles.
+- Striving to foster a vibrant community and emerge as the go-to social media platform that empowers individuals to embrace fitness and engage in active lifestyles.
 
-The project is in progress! [40%]
+***The project is in progress! [40%]***
 
 ## Features
-Attendance Tracking: Members can view real-time attendance records, helping them stay up-to-date with their gym activities.
+- **Attendance Tracking:** Members can view real-time attendance records, helping them stay up-to-date with their gym activities.
 
-Map Integration: The app allows users to locate their training colleagues on a map, fostering a sense of community and collaboration.
+- **Map Integration:** The app allows users to locate their training colleagues on a map, fostering a sense of community and collaboration.
 
-Personalized Training Programs: Users receive training programs tailored to their fitness levels, helping them achieve their fitness goals effectively.
+- **Personalized Training Programs:** Users receive training programs tailored to their fitness levels, helping them achieve their fitness goals effectively.
 
-Database Management: The PostgreSQL database is hosted and managed using Supabase, ensuring reliable and secure data storage.
+- **Database Management:** The PostgreSQL database is hosted and managed using Supabase, ensuring reliable and secure data storage.
 
-Authentication: User accounts are secured through email or phone number authentication, ensuring data privacy and user access control.
+- **Authentication:** User accounts are secured through email or phone number authentication, ensuring data privacy and user access control.
 
 ## Technologies Used
 Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
@@ -23,13 +23,13 @@ Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
 ## Screenshots
 ![image](https://github.com/dvd-a9/Gym-App/assets/71023573/222a3ec3-1c10-4077-9a91-6ecf34ccd12f)
 
-More coming soon!
+*More coming soon!*
 
 ## Contributors
-Jean David Amoussa [dvd-a9]
+#### Jean David Amoussa [dvd-a9] 
 
 ## License
 This project is licensed under the MIT License.
 
 ## Bonus
-Gymrat [definition] : ***Someone who spends a lot of time exercising in the gym, and who cares very much about the shape and condition of their body.***
+***Gymrat:*** *Someone who spends a lot of time exercising in the gym, and who cares very much about the shape and condition of their body.*
