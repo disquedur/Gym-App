@@ -75,6 +75,8 @@ flutter:
   assets:
     - assets/images/Home page.png
     - assets/images/User page.png
+    - assets/images/Home page dark.png
+    - assets/images/User page dark.png
     - assets/images/Coach.png
     - .env
 
