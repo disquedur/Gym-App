@@ -30,3 +30,6 @@ Jean David Amoussa [dvd-a9]
 
 ## License
 This project is licensed under the MIT License.
+
+## Bonus
+Gymrat [definition] : ***Someone who spends a lot of time exercising in the gym, and who cares very much about the shape and condition of their body.***
