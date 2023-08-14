@@ -21,7 +21,7 @@
 Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
 
 ## Screenshots
-![image](https://github.com/dvd-a9/Gym-App/assets/71023573/222a3ec3-1c10-4077-9a91-6ecf34ccd12f)
+![Capture d’écran 2023-08-12 045336](https://github.com/dvd-a9/Gym-App/assets/71023573/f366d0ed-8602-48b7-aafa-6081635e68df)
 
 *More coming soon!*
 
