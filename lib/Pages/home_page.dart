@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/Pages/login_page.dart';
+import 'package:my_app/Pages/sign_page.dart';
 import '../Interfaces/constants.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,7 +43,13 @@ class _HomePageState extends State<HomePage> {
                         color: darkColorText,
                       )),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/login');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => LoginPage(
+                                darkMode: darkMode,
+                              )),
+                    );
                   },
                 ),
               ),
@@ -52,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                     label: Text(
                       'Trainer login',
                       style: TextStyle(
-                        color: darkColorText,
+                        color: darkMode ? Colors.grey : darkColorText,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -71,7 +79,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/signIn');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SignInPage(
+                              darkMode: darkMode,
+                            )),
+                  );
                 },
               ),
               Padding(

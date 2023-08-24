@@ -4,8 +4,6 @@ import 'package:my_app/Classes/side_menu.dart';
 import 'package:my_app/Pages/map_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'Pages/home_page.dart';
-import 'Pages/login_page.dart';
-import 'Pages/sign_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final getIt = GetIt.instance;
@@ -27,8 +25,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/home',
       routes: {
         '/home': (context) => HomePage(),
-        '/login': (context) => LoginPage(),
-        '/signIn': (context) => SignInPage(),
         '/sideMenu': (context) => SideMenu(),
         '/map': (context) => MapComponent(),
       },

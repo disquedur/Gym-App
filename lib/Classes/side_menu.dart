@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/Pages/map_page.dart';
-import 'package:my_app/Pages/sign_page.dart';
+import 'package:my_app/Pages/program_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../Pages/home_page.dart';
@@ -18,7 +18,7 @@ class _SideMenuState extends State<SideMenu> {
 
   final List<Widget> screens = [
     MapComponent(),
-    SignInPage(),
+    ProgramPage(darkMode: true),
     SettingsScreen(),
     HomePage(),
   ];

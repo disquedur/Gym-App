@@ -1,11 +1,20 @@
 import 'dart:core';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
+import 'package:flutter_appauth/flutter_appauth.dart';
+
+import '../Interfaces/constants.dart';
 
 class SignInPage extends StatefulWidget {
+  final bool darkMode;
+
+  const SignInPage({super.key, required this.darkMode});
+
   @override
   _SignInPageState createState() => _SignInPageState();
 }
@@ -102,25 +111,103 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
+  String _generateRandomString() {
+    final random = Random.secure();
+    return base64Url.encode(List<int>.generate(16, (_) => random.nextInt(256)));
+  }
+
+  signInWithGoogle() async {
+    final rawNonce = _generateRandomString();
+    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+    String clientId = dotenv.env['GOOGLE_OAUTH_ID']!;
+
+    final redirectUrl = '${clientId.split('.').reversed.join('.')}:/';
+
+    const discoveryUrl =
+        'https://accounts.google.com/.well-known/openid-configuration';
+
+    final appAuth = FlutterAppAuth();
+
+    final result = await appAuth.authorize(
+      AuthorizationRequest(
+        clientId,
+        redirectUrl,
+        discoveryUrl: discoveryUrl,
+        nonce: hashedNonce,
+        scopes: [
+          'openid',
+          'email',
+        ],
+      ),
+    );
+
+    if (result == null) {
+      throw 'No result';
+    }
+
+    final tokenResult = await appAuth.token(
+      TokenRequest(
+        clientId,
+        redirectUrl,
+        authorizationCode: result.authorizationCode,
+        discoveryUrl: discoveryUrl,
+        codeVerifier: result.codeVerifier,
+        nonce: result.nonce,
+        scopes: [
+          'openid',
+          'email',
+        ],
+      ),
+    );
+
+    final idToken = tokenResult?.idToken;
+
+    if (idToken == null) {
+      throw 'No idToken';
+    }
+
+    AuthResponse signInWithIdToken = await supabase.auth.signInWithIdToken(
+      provider: Provider.google,
+      idToken: idToken,
+      nonce: rawNonce,
+    );
+    createAccount(signInWithIdToken);
+  }
+
+  TextStyle styleTextByTheme() {
+    return widget.darkMode
+        ? TextStyle(
+            color: usernameController.text.isEmpty ||
+                    !formKey.currentState!.validate()
+                ? Colors.grey
+                : darkColorText,
+          )
+        : TextStyle(
+            color: darkColorText,
+          );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme:
-            const IconThemeData(color: Color.fromARGB(255, 217, 219, 222)),
-        backgroundColor: const Color.fromARGB(255, 10, 34, 54),
-        title: const Text(
+        iconTheme: IconThemeData(color: darkColorText),
+        backgroundColor:
+            widget.darkMode ? darkColorBackground : lightColorBackground,
+        title: Text(
           'Create account',
           style: TextStyle(
-            color: Color.fromARGB(255, 217, 219, 222),
+            color: darkColorText,
           ),
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            opacity: 0.7,
-            image: AssetImage('assets/images/User page.png'),
+            image: AssetImage(widget.darkMode
+                ? 'assets/images/User page dark.png'
+                : 'assets/images/User page.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -138,18 +225,25 @@ class _SignInPageState extends State<SignInPage> {
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: TextFormField(
                       controller: usernameController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         filled: true,
-                        fillColor: Color.fromARGB(255, 216, 219, 224),
-                        labelText: "Username (4 characters min.)",
+                        fillColor: darkColorText,
+                        helperText: "Username (4 characters min.)",
+                        helperStyle: TextStyle(
+                            color: widget.darkMode
+                                ? darkColorText
+                                : lightColorText),
                         border: OutlineInputBorder(),
-                        icon: Icon(Icons.account_box),
+                        icon: Icon(Icons.account_box,
+                            color: widget.darkMode
+                                ? darkColorText
+                                : lightColorBackground),
                       ),
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
                           return "The username is required.";
                         } else if (value.length < 4) {
-                          return "The username should have at least 4 characters.";
+                          return "Username (4 characters min.)";
                         }
                         return null;
                       },
@@ -169,8 +263,7 @@ class _SignInPageState extends State<SignInPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               ElevatedButton.icon(
-                                icon: const Icon(Icons.mail,
-                                    color: Color.fromARGB(255, 243, 235, 235)),
+                                icon: Icon(Icons.mail, color: darkColorText),
                                 onPressed: usernameController.text.isNotEmpty &&
                                         formKey.currentState!.validate()
                                     ? () {
@@ -181,19 +274,14 @@ class _SignInPageState extends State<SignInPage> {
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 10, 34, 54),
+                                  backgroundColor: widget.darkMode
+                                      ? darkColorBackground
+                                      : lightColorBackground,
                                 ),
-                                label: const Text(
-                                  'Email',
-                                  style: TextStyle(
-                                    color: Color.fromARGB(255, 238, 239, 239),
-                                  ),
-                                ),
+                                label: Text('Email', style: styleTextByTheme()),
                               ),
                               ElevatedButton.icon(
-                                icon: const Icon(Icons.phone,
-                                    color: Color.fromARGB(255, 243, 235, 235)),
+                                icon: Icon(Icons.phone, color: darkColorText),
                                 onPressed: usernameController.text.isNotEmpty &&
                                         formKey.currentState!.validate()
                                     ? () {
@@ -204,15 +292,11 @@ class _SignInPageState extends State<SignInPage> {
                                       }
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color.fromARGB(255, 10, 34, 54),
+                                  backgroundColor: widget.darkMode
+                                      ? darkColorBackground
+                                      : lightColorBackground,
                                 ),
-                                label: const Text(
-                                  'Phone',
-                                  style: TextStyle(
-                                    color: Color.fromARGB(255, 238, 239, 239),
-                                  ),
-                                ),
+                                label: Text('Phone', style: styleTextByTheme()),
                               ),
                             ],
                           ),
@@ -223,7 +307,8 @@ class _SignInPageState extends State<SignInPage> {
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: ElevatedButton(
-                      onPressed: codeValidationController.text.isNotEmpty
+                      onPressed: codeValidationController.text.isNotEmpty &&
+                              formKey.currentState!.validate()
                           ? () {
                               setState(() {
                                 if (formKey.currentState!.validate()) {
@@ -233,14 +318,14 @@ class _SignInPageState extends State<SignInPage> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 10, 34, 54),
+                        backgroundColor: widget.darkMode
+                            ? darkColorBackground
+                            : lightColorBackground,
                       ),
-                      child: const Text(
-                        'Create account',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 238, 239, 239),
-                        ),
-                      ),
+                      child: Text('Create account',
+                          style: codeValidationController.text.isEmpty
+                              ? const TextStyle(color: Colors.grey)
+                              : styleTextByTheme()),
                     ),
                   ),
               ],
@@ -262,11 +347,16 @@ class _SignInPageState extends State<SignInPage> {
               width: MediaQuery.of(context).size.width * 0.8,
               child: TextFormField(
                 controller: authController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   filled: true,
-                  fillColor: Color.fromARGB(255, 216, 219, 224),
-                  labelText: "Email address",
-                  icon: Icon(Icons.contact_mail),
+                  fillColor: darkColorText,
+                  helperText: "Email address",
+                  helperStyle: TextStyle(
+                      color: widget.darkMode ? darkColorText : lightColorText),
+                  icon: Icon(Icons.contact_mail,
+                      color: widget.darkMode
+                          ? darkColorText
+                          : lightColorBackground),
                   border: OutlineInputBorder(),
                 ),
                 validator: (String? value) {
@@ -290,11 +380,13 @@ class _SignInPageState extends State<SignInPage> {
               width: MediaQuery.of(context).size.width * 0.8,
               child: IntlPhoneField(
                 controller: authController,
-                decoration: const InputDecoration(
-                  counterText: "",
+                decoration: InputDecoration(
+                  //counterText: "",
                   filled: true,
-                  fillColor: const Color.fromARGB(255, 216, 219, 224),
-                  labelText: 'Phone Number',
+                  fillColor: darkColorText,
+                  helperText: "Phone number",
+                  helperStyle: TextStyle(
+                      color: widget.darkMode ? darkColorText : lightColorText),
                   border: const OutlineInputBorder(),
                 ),
                 initialCountryCode: 'CA',
@@ -311,11 +403,15 @@ class _SignInPageState extends State<SignInPage> {
             width: MediaQuery.of(context).size.width * 0.8,
             child: TextFormField(
               controller: passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
-                fillColor: Color.fromARGB(255, 216, 219, 224),
-                labelText: "Password",
-                icon: Icon(Icons.password),
+                fillColor: darkColorText,
+                helperText: "Password (5 characters min.)",
+                helperStyle: TextStyle(
+                    color: widget.darkMode ? darkColorText : lightColorText),
+                icon: Icon(Icons.password,
+                    color:
+                        widget.darkMode ? darkColorText : lightColorBackground),
                 border: OutlineInputBorder(),
               ),
               obscureText: true,
@@ -323,7 +419,7 @@ class _SignInPageState extends State<SignInPage> {
                 if (value == null || value.isEmpty) {
                   return "The password is required.";
                 } else if (value.length < 5) {
-                  return "The password should have at least 5 characters.";
+                  return "Password (5 characters min.)";
                 }
                 return null;
               },
@@ -341,12 +437,14 @@ class _SignInPageState extends State<SignInPage> {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 10, 34, 54),
+                  backgroundColor: widget.darkMode
+                      ? darkColorBackground
+                      : lightColorBackground,
                 ),
                 child: Text(
                   'Verify ${authMethod.toLowerCase()}',
-                  style: const TextStyle(
-                    color: Color.fromARGB(255, 238, 239, 239),
+                  style: TextStyle(
+                    color: darkColorText,
                   ),
                 ),
               )
@@ -357,17 +455,28 @@ class _SignInPageState extends State<SignInPage> {
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: TextFormField(
                       controller: codeValidationController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         filled: true,
-                        fillColor: Color.fromARGB(255, 216, 219, 224),
-                        labelText: "Validation code",
-                        icon: Icon(Icons.confirmation_number),
+                        fillColor: darkColorText,
+                        helperText: "Validation code",
+                        helperStyle: TextStyle(
+                            color: widget.darkMode
+                                ? darkColorText
+                                : lightColorText),
+                        icon: Icon(Icons.confirmation_number,
+                            color: widget.darkMode
+                                ? darkColorText
+                                : lightColorBackground),
                         border: OutlineInputBorder(),
                       ),
                     ),
                   ),
                   TextButton(
-                    child: const Text('Send new code?'),
+                    child: Text('Send new code?',
+                        style: TextStyle(
+                            color: widget.darkMode
+                                ? darkColorBackground
+                                : lightColorBackground)),
                     onPressed: () {
                       setState(() {
                         sendVerification();
@@ -377,7 +486,11 @@ class _SignInPageState extends State<SignInPage> {
                 ],
               ),
         TextButton(
-          child: const Text('Change authentication method'),
+          child: Text('Change authentication method',
+              style: TextStyle(
+                  color: widget.darkMode
+                      ? darkColorBackground
+                      : lightColorBackground)),
           onPressed: () {
             setState(() {
               authMethod = "";

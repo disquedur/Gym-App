@@ -48,6 +48,8 @@ dependencies:
   supabase_flutter: ^1.10.10
   flutter_dotenv: ^5.1.0
   intl_phone_field: ^3.1.0
+  flutter_appauth: ^6.0.2
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

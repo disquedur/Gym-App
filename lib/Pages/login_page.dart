@@ -4,7 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../Interfaces/constants.dart';
+
 class LoginPage extends StatefulWidget {
+  final bool darkMode;
+
+  const LoginPage({super.key, required this.darkMode});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -38,25 +44,40 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushNamed(context, '/sideMenu');
   }
 
+  TextStyle styleTextByTheme() {
+    return widget.darkMode
+        ? TextStyle(
+            color: passwordController.text.isEmpty ||
+                    authController.text.isEmpty ||
+                    !formKey.currentState!.validate()
+                ? Colors.grey
+                : darkColorText,
+          )
+        : TextStyle(
+            color: darkColorText,
+          );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme:
-            const IconThemeData(color: Color.fromARGB(255, 217, 219, 222)),
-        backgroundColor: const Color.fromARGB(255, 10, 34, 54),
-        title: const Text(
+        iconTheme: IconThemeData(color: darkColorText),
+        backgroundColor:
+            widget.darkMode ? darkColorBackground : lightColorBackground,
+        title: Text(
           'Login',
           style: TextStyle(
-            color: Color.fromARGB(255, 217, 219, 222),
+            color: darkColorText,
           ),
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            opacity: 0.7,
-            image: AssetImage('assets/images/User page.png'),
+            image: AssetImage(widget.darkMode
+                ? 'assets/images/User page dark.png'
+                : 'assets/images/User page.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -77,40 +98,46 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.mail,
-                            color: Color.fromARGB(255, 243, 235, 235)),
+                        icon: Icon(
+                          Icons.mail,
+                          color: darkColorText,
+                        ),
                         onPressed: () {
                           setState(() {
                             authMethod = "Email address";
+                            authController.text = "";
                           });
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 10, 34, 54),
+                          backgroundColor: widget.darkMode
+                              ? darkColorBackground
+                              : lightColorBackground,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Email',
                           style: TextStyle(
-                            color: Color.fromARGB(255, 238, 239, 239),
+                            color: darkColorText,
                           ),
                         ),
                       ),
                     ),
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.phone,
-                          color: Color.fromARGB(255, 243, 235, 235)),
+                      icon: Icon(Icons.phone, color: darkColorText),
                       onPressed: () {
                         setState(() {
                           authMethod = "Phone number";
+                          authController.text = "";
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 10, 34, 54),
+                        backgroundColor: widget.darkMode
+                            ? darkColorBackground
+                            : lightColorBackground,
                       ),
-                      label: const Text(
+                      label: Text(
                         'Phone',
                         style: TextStyle(
-                          color: Color.fromARGB(255, 238, 239, 239),
+                          color: darkColorText,
                         ),
                       ),
                     ),
@@ -129,11 +156,19 @@ class _LoginPageState extends State<LoginPage> {
                       width: MediaQuery.of(context).size.width * 0.8,
                       child: TextFormField(
                         controller: authController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           filled: true,
-                          fillColor: Color.fromARGB(255, 216, 219, 224),
-                          labelText: "Email address",
-                          icon: Icon(Icons.contact_mail),
+                          fillColor: darkColorText,
+                          helperText: "Email address",
+                          helperStyle: TextStyle(
+                              color: widget.darkMode
+                                  ? darkColorText
+                                  : lightColorText),
+                          labelStyle: TextStyle(color: lightColorBackground),
+                          icon: Icon(Icons.contact_mail,
+                              color: widget.darkMode
+                                  ? darkColorBackground
+                                  : lightColorBackground),
                           border: OutlineInputBorder(),
                         ),
                         validator: (String? value) {
@@ -157,11 +192,16 @@ class _LoginPageState extends State<LoginPage> {
                       width: MediaQuery.of(context).size.width * 0.8,
                       child: IntlPhoneField(
                         controller: authController,
-                        decoration: const InputDecoration(
-                          counterText: "",
+                        decoration: InputDecoration(
+                          //counterText: "",
                           filled: true,
-                          fillColor: const Color.fromARGB(255, 216, 219, 224),
-                          labelText: 'Phone Number',
+                          fillColor: darkColorText,
+                          helperText: "Phone Number",
+                          helperStyle: TextStyle(
+                              color: widget.darkMode
+                                  ? darkColorText
+                                  : lightColorText),
+                          labelStyle: TextStyle(color: lightColorBackground),
                           border: const OutlineInputBorder(),
                         ),
                         initialCountryCode: 'CA',
@@ -178,11 +218,19 @@ class _LoginPageState extends State<LoginPage> {
                     width: MediaQuery.of(context).size.width * 0.8,
                     child: TextFormField(
                       controller: passwordController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         filled: true,
-                        fillColor: Color.fromARGB(255, 216, 219, 224),
-                        labelText: "Password",
-                        icon: Icon(Icons.password),
+                        fillColor: darkColorText,
+                        helperText: "Password",
+                        helperStyle: TextStyle(
+                            color: widget.darkMode
+                                ? darkColorText
+                                : lightColorText),
+                        labelStyle: TextStyle(color: lightColorBackground),
+                        icon: Icon(Icons.password,
+                            color: widget.darkMode
+                                ? darkColorBackground
+                                : lightColorBackground),
                         border: OutlineInputBorder(),
                       ),
                       obscureText: true,
@@ -190,7 +238,7 @@ class _LoginPageState extends State<LoginPage> {
                         if (value == null || value.isEmpty) {
                           return "The password is required.";
                         } else if (value.length < 5) {
-                          return "The password should have at least 5 characters.";
+                          return "Password (5 characters min.)";
                         }
                         return null;
                       },
@@ -201,20 +249,18 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.bottomCenter,
                   child: ElevatedButton(
                     onPressed: authController.text.isNotEmpty &&
-                            passwordController.text.isNotEmpty
+                            passwordController.text.isNotEmpty &&
+                            formKey.currentState!.validate()
                         ? () {
                             if (formKey.currentState!.validate()) login();
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 10, 34, 54),
+                      backgroundColor: widget.darkMode
+                          ? darkColorBackground
+                          : lightColorBackground,
                     ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 238, 239, 239),
-                      ),
-                    ),
+                    child: Text('Login', style: styleTextByTheme()),
                   ),
                 ),
               ],

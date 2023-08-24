@@ -59,6 +59,7 @@ android {
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
         manifestPlaceholders["ANDROID_API_KEY"] = "${properties.getProperty('androidMapsApiKey')}"
+        manifestPlaceholders += ["appAuthRedirectScheme": applicationId]
     }
 
     buildTypes {
