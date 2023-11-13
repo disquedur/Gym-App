@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:my_app/Pages/map_page.dart';
 import 'package:my_app/Pages/program_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -52,7 +53,7 @@ class _SideMenuState extends State<SideMenu> {
                 color: Color.fromARGB(255, 10, 34, 54),
               ),
               child: Text(
-                'Menu',
+                'Menu\nWelcome',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -100,10 +101,21 @@ class _SideMenuState extends State<SideMenu> {
 class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Settings Screen',
-        style: TextStyle(fontSize: 24),
+    return Center(
+      child: ElevatedButton(
+        onPressed: () async {
+          await Supabase.instance.client
+              .from(
+                dotenv.env['TABLE_USERS']!,
+              )
+              .select();
+
+          print(Supabase.instance.client.auth.currentUser);
+        },
+        child: const Text(
+          'Settings Screen',
+          style: TextStyle(fontSize: 24),
+        ),
       ),
     );
   }

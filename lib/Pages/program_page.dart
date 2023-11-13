@@ -32,9 +32,6 @@ class _ProgramPageState extends State<ProgramPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Program"),
-      ),
       body: Scrollbar(
         thickness: 15,
         thumbVisibility: true,

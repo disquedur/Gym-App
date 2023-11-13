@@ -3,11 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
-import 'package:flutter_appauth/flutter_appauth.dart';
-
 import '../Interfaces/constants.dart';
 
 class SignInPage extends StatefulWidget {
@@ -40,27 +35,34 @@ class _SignInPageState extends State<SignInPage> {
   void dispose() {
     usernameController.dispose();
     authController.dispose();
+    passwordController.dispose();
     codeValidationController.dispose();
     super.dispose();
   }
 
-  createAccount(AuthResponse authResponse) async {
-    String authInfo = authMethod == "Email address" ? 'email' : 'phone';
+  createAccount() async {
     AuthResponse authResponse = AuthResponse();
-    if (authInfo == 'phone') {
-      try {
+    try {
+      if (authMethod == 'Phone number') {
         authResponse = await supabase.auth.verifyOTP(
             phone: phoneNumber,
             token: codeValidationController.text,
             type: OtpType.sms);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Token has expired or is invalid"),
-            duration: Duration(seconds: 3),
-          ),
-        );
+      } else {
+        authResponse = await supabase.auth.verifyOTP(
+            email: authController.text,
+            token: codeValidationController.text,
+            type: OtpType.email);
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
+          content: Text("Token has expired or is invalid"),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
     if (authResponse.user?.aud == "authenticated") {
       await supabase
@@ -69,12 +71,13 @@ class _SignInPageState extends State<SignInPage> {
       )
           .insert({
         'username': usernameController.text,
-        'password': passwordController.text,
-        authInfo: authController.text
+        'auth': authController.text
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
           content: Text("Account created!"),
           duration: Duration(seconds: 3),
         ),
@@ -83,96 +86,58 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
-  sendVerification() {
-    setState(() {
-      supabase.auth
-          .signUp(phone: phoneNumber, password: passwordController.text);
-      isCodeSent = true;
-    });
+  signUpWithPhone() {
+    try {
+      setState(() {
+        supabase.auth
+            .signUp(phone: phoneNumber, password: passwordController.text);
+        isCodeSent = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
+          content: Text(authMessage),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
+          content: Text("Sorry, this phone number is already used."),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   signUpWithEmail() async {
-    final confirmation = await supabase.auth
-        .signUp(email: authController.text, password: passwordController.text);
-    if (!isEmailSent) {
-      await supabase.auth.signInWithOtp(email: authController.text);
-      isEmailSent = true;
-    } else if (confirmation.user?.emailConfirmedAt == null) {
+    try {
+      setState(() {
+        supabase.auth.signUp(
+            email: authController.text, password: passwordController.text);
+        isCodeSent = true;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You received an email, please verify your email!"),
-          duration: Duration(seconds: 5),
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
+          content: Text(authMessage),
+          duration: Duration(seconds: 4),
         ),
       );
-    } else {
-      await supabase.auth.signUp(
-          email: authController.text, password: passwordController.text);
-      createAccount(emailRes);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor:
+              widget.darkMode ? darkColorBackground : lightColorBackground,
+          content: Text("Sorry, this email address is already used."),
+          duration: Duration(seconds: 4),
+        ),
+      );
     }
-  }
-
-  String _generateRandomString() {
-    final random = Random.secure();
-    return base64Url.encode(List<int>.generate(16, (_) => random.nextInt(256)));
-  }
-
-  signInWithGoogle() async {
-    final rawNonce = _generateRandomString();
-    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
-
-    String clientId = dotenv.env['GOOGLE_OAUTH_ID']!;
-
-    final redirectUrl = '${clientId.split('.').reversed.join('.')}:/';
-
-    const discoveryUrl =
-        'https://accounts.google.com/.well-known/openid-configuration';
-
-    final appAuth = FlutterAppAuth();
-
-    final result = await appAuth.authorize(
-      AuthorizationRequest(
-        clientId,
-        redirectUrl,
-        discoveryUrl: discoveryUrl,
-        nonce: hashedNonce,
-        scopes: [
-          'openid',
-          'email',
-        ],
-      ),
-    );
-
-    if (result == null) {
-      throw 'No result';
-    }
-
-    final tokenResult = await appAuth.token(
-      TokenRequest(
-        clientId,
-        redirectUrl,
-        authorizationCode: result.authorizationCode,
-        discoveryUrl: discoveryUrl,
-        codeVerifier: result.codeVerifier,
-        nonce: result.nonce,
-        scopes: [
-          'openid',
-          'email',
-        ],
-      ),
-    );
-
-    final idToken = tokenResult?.idToken;
-
-    if (idToken == null) {
-      throw 'No idToken';
-    }
-
-    AuthResponse signInWithIdToken = await supabase.auth.signInWithIdToken(
-      provider: Provider.google,
-      idToken: idToken,
-      nonce: rawNonce,
-    );
-    createAccount(signInWithIdToken);
   }
 
   TextStyle styleTextByTheme() {
@@ -312,7 +277,7 @@ class _SignInPageState extends State<SignInPage> {
                           ? () {
                               setState(() {
                                 if (formKey.currentState!.validate()) {
-                                  createAccount(AuthResponse());
+                                  createAccount();
                                 }
                               });
                             }
@@ -433,7 +398,7 @@ class _SignInPageState extends State<SignInPage> {
                     ? () {
                         authMethod == "Email address"
                             ? signUpWithEmail()
-                            : sendVerification();
+                            : signUpWithPhone();
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -472,14 +437,16 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                   ),
                   TextButton(
-                    child: Text('Send new code?',
+                    child: Text('Resend code?',
                         style: TextStyle(
                             color: widget.darkMode
                                 ? darkColorBackground
                                 : lightColorBackground)),
                     onPressed: () {
                       setState(() {
-                        sendVerification();
+                        authMethod == "Email address"
+                            ? signUpWithEmail()
+                            : signUpWithPhone();
                       });
                     },
                   ),

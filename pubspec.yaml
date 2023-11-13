@@ -50,6 +50,9 @@ dependencies:
   intl_phone_field: ^3.1.0
   flutter_appauth: ^6.0.2
   crypto: ^3.0.3
+  geolocator: ^10.0.0
+  image_picker: ^1.0.4
+
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +84,17 @@ flutter:
     - assets/images/User page dark.png
     - assets/images/Coach.png
     - .env
+
+  #fonts:
+  #  - family: LilitaOne
+  #      fonts:
+  #          - asset: fonts/LilitaOne-Regular.ttf
+  #  - family: Lobster
+  #      fonts:
+  #          - asset: fonts/Lobster-Regular.ttf
+
+
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
