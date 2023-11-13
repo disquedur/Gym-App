@@ -4,7 +4,7 @@
 
 - Striving to foster a vibrant community and emerge as the go-to social media platform that empowers individuals to embrace fitness and engage in active lifestyles.
 
-***The project is in progress! [40%]***
+***The project is in progress! [65%]***
 
 ## Features
 - **Attendance Tracking:** Members can view real-time attendance records, helping them stay up-to-date with their gym activities.
@@ -21,12 +21,20 @@
 Flutter - Supabase - Google cloud (Map sdk) - Twillio (sms validation)
 
 ## Screenshots
-![Capture d’écran 2023-08-12 045336](https://github.com/dvd-a9/Gym-App/assets/71023573/f366d0ed-8602-48b7-aafa-6081635e68df)
+
+### Part 1
+https://github.com/disquedur/Gym-App/assets/71023573/659752ad-0e64-4e46-9c7a-42a67a30942f
+
+
+### Part 2
+https://github.com/disquedur/Gym-App/assets/71023573/5f885a44-29fb-4233-9b7f-b999227f8bca
+
+
 
 *More coming soon!*
 
 ## Contributors
-#### Jean David Amoussa [dvd-a9] 
+#### Jean David Amoussa
 
 ## License
 This project is licensed under the MIT License.
